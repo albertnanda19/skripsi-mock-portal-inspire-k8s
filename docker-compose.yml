@@ -1,0 +1,74 @@
+version: "3.8"
+
+services:
+  nginx:
+    build:
+      context: ./docker/nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html:delegated
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:delegated
+    depends_on:
+      - php-fpm
+    networks:
+      - app-network
+
+  php-fpm:
+    build:
+      context: ./docker/php-fpm
+      args:
+        PHP_VERSION: 8.1
+    volumes:
+      - ./:/var/www/html:delegated
+      - ./docker/php-fpm/php.ini:/usr/local/etc/php/php.ini:delegated
+    environment:
+      - CI_ENVIRONMENT=development
+      - COMPOSER_ALLOW_SUPERUSER=1
+      - DB_HOST=mysql-database
+      - DB_USER=albert
+      - DB_PASSWORD=password
+      - DB_NAME=portal_inspire
+    depends_on:
+      mysql-database:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  mysql-database:
+    build:
+      context: ./docker/mysql
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=portal_inspire
+      - MYSQL_USER=albert
+      - MYSQL_PASSWORD=password
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p$$MYSQL_ROOT_PASSWORD",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
