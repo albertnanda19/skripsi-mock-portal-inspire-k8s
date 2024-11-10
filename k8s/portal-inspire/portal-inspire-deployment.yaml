@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portal-inspire
+  namespace: portal-inspire
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: portal-inspire
+  template:
+    metadata:
+      labels:
+        app: portal-inspire
+    spec:
+      containers:
+      - name: php-fpm
+        image: your-docker-registry/php-fpm:8.1
+        env:
+        - name: DB_HOST
+          value: "mysql.portal-inspire.svc.cluster.local"
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_PASSWORD
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_DATABASE
+        volumeMounts:
+        - name: codeigniter-code
+          mountPath: /var/www/html
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+
+      - name: nginx
+        image: your-docker-registry/nginx:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: codeigniter-code
+          mountPath: /var/www/html
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+
+      volumes:
+      - name: codeigniter-code
+        persistentVolumeClaim:
+          claimName: codeigniter-pvc
