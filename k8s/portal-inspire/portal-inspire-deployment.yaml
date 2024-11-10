@@ -4,7 +4,7 @@ metadata:
   name: portal-inspire
   namespace: portal-inspire
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: portal-inspire
