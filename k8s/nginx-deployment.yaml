@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: portal-inspire
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: alberttmangiri/portal-inspire-nginx:latest
+        resources:
+          limits:
+            cpu: "500m" # 0.5 CPU
+            memory: "512Mi"
+          requests:
+            cpu: "200m" # 0.2 CPU
+            memory: "256Mi"
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: app-source
+          mountPath: /var/www/html
+      volumes:
+      - name: app-source
+        hostPath:
+          path: /path/to/portal-inspire
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: portal-inspire
+spec:
+  type: LoadBalancer
+  selector:
+    app: nginx
+  ports:
+  - port: 80
+    targetPort: 80

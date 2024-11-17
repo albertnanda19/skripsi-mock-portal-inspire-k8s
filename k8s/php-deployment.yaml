@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php-fpm
+  namespace: portal-inspire
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: php-fpm
+  template:
+    metadata:
+      labels:
+        app: php-fpm
+    spec:
+      containers:
+      - name: php-fpm
+        image: alberttmangiri/portal-inspire-php:latest
+        resources:
+          limits:
+            cpu: "1000m" # 1 CPU
+            memory: "1Gi"
+          requests:
+            cpu: "500m" # 0.5 CPU
+            memory: "512Mi"
+        env:
+        - name: CI_ENVIRONMENT
+          value: "development"
+        - name: DB_HOST
+          value: "mysql-service"
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_PASSWORD
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_DATABASE
+        volumeMounts:
+        - name: app-source
+          mountPath: /var/www/html
+      volumes:
+      - name: app-source
+        hostPath:
+          path: /path/to/portal-inspire
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: php-service
+  namespace: portal-inspire
+spec:
+  selector:
+    app: php-fpm
+  ports:
+  - port: 9000
+    targetPort: 9000
