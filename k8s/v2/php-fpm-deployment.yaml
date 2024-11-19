@@ -1,0 +1,55 @@
+# php-fpm-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php-fpm-deployment
+spec:
+  replicas: 2 # Jumlah pod yang direkomendasikan
+  selector:
+    matchLabels:
+      app: php-fpm
+  template:
+    metadata:
+      labels:
+        app: php-fpm
+    spec:
+      containers:
+      - name: php-fpm
+        image: your-php-fpm-image:latest
+        env:
+        - name: CI_ENVIRONMENT
+          value: development
+        - name: DB_HOST
+          value: mysql-service
+        - name: DB_USER
+          value: albert
+        - name: DB_PASSWORD
+          value: password
+        - name: DB_NAME
+          value: portal_inspire
+        volumeMounts:
+        - name: app-code
+          mountPath: /var/www/html
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+      volumes:
+      - name: app-code
+        hostPath:
+          path: /portal-inspire # Sesuaikan path ke folder aplikasi Anda di master node
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: php-fpm-service
+spec:
+  selector:
+    app: php-fpm
+  ports:
+  - protocol: TCP
+    port: 9000
+    targetPort: 9000

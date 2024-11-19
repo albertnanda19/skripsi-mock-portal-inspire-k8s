@@ -31,7 +31,7 @@ spec:
       volumes:
       - name: app-source
         hostPath:
-          path: /path/to/portal-inspire
+          path: /portal-inspire
 ---
 apiVersion: v1
 kind: Service
