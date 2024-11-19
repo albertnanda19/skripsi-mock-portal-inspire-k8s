@@ -1,6 +1,5 @@
 FROM mysql:latest
 
-
 COPY my.cnf /etc/mysql/conf.d/my.cnf
 
 RUN chown -R mysql:mysql /etc/mysql/conf.d/my.cnf
