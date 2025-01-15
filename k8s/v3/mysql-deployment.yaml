@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: portalinspiremock.azurecr.io/skripsi-mock-portal-inspire-k8s-mysql-database:latest
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "root"
+            - name: MYSQL_DATABASE
+              value: "portal_inspire"
+            - name: MYSQL_USER
+              value: "albert"
+            - name: MYSQL_PASSWORD
+              value: "password"
+      tolerations:
+        - key: "node-role.kubernetes.io/master"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
+      imagePullSecrets:
+        - name: acr-secret

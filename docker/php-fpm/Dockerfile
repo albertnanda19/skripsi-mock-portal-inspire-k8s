@@ -8,7 +8,8 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     zip \
     unzip \
-    default-mysql-client
+    default-mysql-client \
+    dos2unix
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -30,9 +31,12 @@ RUN mkdir -p /home/dev/.composer && \
 
 WORKDIR /var/www/html
 
-COPY docker-entrypoint.sh /usr/local/bin/
+COPY . .
+
+COPY ./docker-entrypoint.sh /usr/local/bin/
+RUN dos2unix /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 USER dev
 
-ENTRYPOINT ["docker-entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
