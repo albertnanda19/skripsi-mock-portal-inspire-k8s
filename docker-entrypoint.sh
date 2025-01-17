@@ -38,6 +38,6 @@ php spark db:seed CourseSeeder
 php spark db:seed CourseLecturerSeeder
 php spark db:seed EnrollmentsSeeder
 
-# Start PHP-FPM
-echo "Starting PHP-FPM..."
-php-fpm
+# Start Apache
+echo "Starting Apache..."
+apache2-foreground
